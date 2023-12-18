@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Tabs, Tab, Modal, Button, Form } from 'react-bootstrap';
 import supabase from '../config';
+import { ToastContainer, toast } from 'react-toastify';
 
 const monthsList = [
   'январь', 'февраль', 'март',
@@ -70,6 +71,18 @@ const DebtsTable = ({ debts }) => {
     }
   };
 
+  const notify = () => {
+    toast.error('Ваше число превышает ваш долг', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+  }
   const handleDelete = async () => {
     try {
       const { error } = await supabase
@@ -129,8 +142,11 @@ const DebtsTable = ({ debts }) => {
     const currentDate = new Date();
     const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
     const currentYear = currentDate.getFullYear();
-
-        if(num>0){
+    if(num<0&&num!==0){
+      notify()
+    }
+    else{
+      if(num>0){
         try {
             const { error } = await supabase
               .from('debts')
@@ -199,6 +215,7 @@ const DebtsTable = ({ debts }) => {
             console.error('Error updating data:', error);
           }
     }
+    }
   }
 
   const handleCloseConcealment = () =>{
@@ -244,7 +261,7 @@ const DebtsTable = ({ debts }) => {
         <Modal.Body>
         <Form.Group className="mb-3">
             <Form.Label>Сумма сокрытия долга</Form.Label>
-            <Form.Control type="number" placeholder="0" onChange={(e) => setConcealment(e.target.value)} value={concealment} />
+            <Form.Control type="number" placeholder="0" onChange={(e) => setConcealment(e.target.value)} value={concealment} max={sum}/>
         </Form.Group>
         </Modal.Body>
         <Modal.Footer>
@@ -256,6 +273,18 @@ const DebtsTable = ({ debts }) => {
           </Button>
         </Modal.Footer>
       </Modal>
+      <ToastContainer
+      position="bottom-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="light"
+      />
       <Modal show={confirmationModal} onHide={()=>setConfirmationModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Изменение долга</Modal.Title>
@@ -283,7 +312,7 @@ const DebtsTable = ({ debts }) => {
           </Form.Group>
           <Form.Group className="mb-3">
             <Form.Label>Сумма</Form.Label>
-            <Form.Control type="number" placeholder="0" onChange={(e) => setSum(e.target.value)} value={sum} />
+            <Form.Control type="number" max={sum} placeholder="0" onChange={(e) => setSum(e.target.value)} value={sum} />
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>

@@ -8,7 +8,9 @@ const SummaryComponent = ({ income, expenses, debts, saving }) => {
   // Объединение всех данных
   const {id} = useParams()
   const [dolg, setDolg] = useState()
-  const allData = [...income, ...expenses, ...debts, ...saving];
+  let allData
+  if(income||expenses||debts||saving)
+  allData = [...income, ...expenses, ...debts, ...saving];
 
   // Группировка данных по месяцам и годам для каждой категории
   const groupedData = {};
@@ -45,20 +47,22 @@ const SummaryComponent = ({ income, expenses, debts, saving }) => {
   // Функция для анализа финансов
   const analyzeFinances = () => {
     const currentData = groupedData[activeTab];
-    const expenseThreshold = currentData.income * 0.9;
+    if(currentData){
+      const expenseThreshold = currentData.income * 0.9;
   
-    if (currentData.expenses  > currentData.income ) {
-      const neededIncome = currentData.expenses - currentData.income;
-      setNotification(`Внимание: Расходы превышают доходы. Необходимо заработать ещё ${neededIncome} для покрытия расходов.`);
-    }else if (currentData.debts > currentData.income){
-      const neededIncome = currentData.debts - currentData.income;
-      setNotification(`Внимание: Долги превышают доходы. Необходимо заработать ещё ${neededIncome} для покрытия долгов.`);
-    }
-     else if (currentData.expenses >= expenseThreshold && !expenseWarning) {
-      setExpenseWarning(true);
-      setNotification('Внимание: Расходы приближаются к доходам на 10%. Сократите расходы для поддержания финансового баланса.');
-    } else {
-      setNotification('Финансы в порядке.');
+      if (currentData.expenses  > currentData.income ) {
+        const neededIncome = currentData.expenses - currentData.income;
+        setNotification(`Внимание: Расходы превышают доходы. Необходимо заработать ещё ${neededIncome} для покрытия расходов.`);
+      }else if (currentData.debts > currentData.income){
+        const neededIncome = currentData.debts - currentData.income;
+        setNotification(`Внимание: Долги превышают доходы. Необходимо заработать ещё ${neededIncome} для покрытия долгов.`);
+      }
+      else if (currentData.expenses >= expenseThreshold && !expenseWarning) {
+        setExpenseWarning(true);
+        setNotification('Внимание: Расходы приближаются к доходам на 10%. Сократите расходы для поддержания финансового баланса.');
+      } else {
+        setNotification('Финансы в порядке.');
+      }
     }
   };
   
@@ -96,9 +100,12 @@ const SummaryComponent = ({ income, expenses, debts, saving }) => {
     let num = debts.reduce((accumulator, debt) => accumulator + debt.sum, 0);
     setDolg(num)
   }
+  
   return (
     <div style={{ marginTop: '2rem' }}>
-      <h2 style={{ marginBottom: '1rem', textAlign: 'center' }}>Обзор финансов</h2>
+      {Object.keys(groupedData).length > 0 &&(
+        <h2 style={{ marginBottom: '1rem', textAlign: 'center' }}>Обзор финансов</h2>
+      )}
 
       {/* Tabs для каждой даты */}
       <ul className="nav nav-tabs">
